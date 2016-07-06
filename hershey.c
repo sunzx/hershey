@@ -750,6 +750,44 @@ const uint16_t Fontptr[]={
 	4904, 4945, 4954, 4961, 4970, 5019,
 };
 
+//This is a standard implementation of Bresenham's line drawing algorithm
+//modified from Java program at http://escience.anu.edu.au/lecture/cg/Line/BresenhamAlgo.en.html .
+void gr_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,uint32_t color,
+		void (*setpoint)(uint16_t, uint16_t, uint32_t)){
+	int16_t dx, dy, stepx, stepy, fraction;
+	dy = y1 - y0;
+	dx = x1 - x0;
+
+	if (dy < 0) { dy = -dy;  stepy = -1; } else { stepy = 1; }
+	if (dx < 0) { dx = -dx;  stepx = -1; } else { stepx = 1; }
+	dy <<= 1;
+	dx <<= 1;
+
+	(*setpoint)(x0, y0, color);
+	if (dx > dy) {
+		fraction = dy - (dx >> 1);
+		while (x0 != x1) {
+			if (fraction >= 0) {
+				y0 += stepy;
+				fraction -= dx;
+			}
+			x0 += stepx;
+			fraction += dy;
+			(*setpoint)(x0, y0, color);
+		}
+	} else {
+		fraction = dx - (dy >> 1);
+		while (y0 != y1) {
+			if (fraction >= 0) {
+				x0 += stepx;
+				fraction -= dy;
+			}
+			y0 += stepy;
+			fraction += dx;
+			(*setpoint)(x0, y0, color);
+		}
+	}
+}
 
 void placechar(char c, uint16_t* px, uint16_t* py, uint32_t color, uint8_t size,
 		void (*setpoint)(uint16_t, uint16_t, uint32_t)) {
